@@ -7,8 +7,8 @@
 
 
 struct poisson {
-	int x ; 
-	int y ; 
+	float x ; 
+	float y ; 
 	float angle ; 
 };
 
@@ -18,10 +18,14 @@ int main(int argc, char* argv[]) {
 
 	// initialise poisson structure 
 	int n = 100 ; 
+	int px = 600 ;
+	int py = 400 ;
 	poisson* p = (poisson*) malloc(sizeof(poisson) * n);
 	for (int i = 0 ; i < n ; i++){
-		p[i].x = (int) (i * 15);
-		p[i].y = (int) (i * 10)*0; 
+		// create random numbers 
+		//
+		p[i].x = (float)rand()/(float)(RAND_MAX/px)  ;
+		p[i].y = (float)rand()/(float)(RAND_MAX/py); 
 		p[i].angle = (float) 5.0f * i ;
 	}
 
@@ -32,7 +36,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Create SDL window and renderer
-    SDL_Window* window = SDL_CreateWindow("SDL2 + ImGui", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1600, 1000, SDL_WINDOW_SHOWN);
+    SDL_Window* window = SDL_CreateWindow("SDL2 + ImGui", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, px, py, SDL_WINDOW_SHOWN);
     if (!window) {
         fprintf(stderr, "Error creating SDL window: %s\n", SDL_GetError());
         SDL_Quit();
@@ -73,7 +77,8 @@ int main(int argc, char* argv[]) {
 	}
 
 
-	int count = 0 ; 
+
+	int size_fish = 1.0 ; 
 
     // Main loop
     bool quit = false;
@@ -94,6 +99,7 @@ int main(int argc, char* argv[]) {
         // Your ImGui code here
         ImGui::Begin("Salut les ZINZINS");
         ImGui::Text("fenêtre d'un ZINZIN");
+	ImGui::SliderInt("Size", &size_fish, 1, 100);
         ImGui::End();
 
         // Render ImGui
@@ -116,8 +122,8 @@ int main(int argc, char* argv[]) {
     SDL_QueryTexture(texture, NULL, NULL, &originalWidth, &originalHeight);
 
     // Redimensionner l'image à la moitié de sa taille d'origine (par exemple)
-    int newWidth = (int)(originalWidth / 50);
-    int newHeight = (int)(originalHeight / 50);
+    int newWidth = (int)(size_fish);
+    int newHeight = (int)(size_fish);
 
     // Définir la destination pour le redimensionnement
     SDL_Rect Rect = {0,0, originalWidth, originalHeight};
@@ -125,7 +131,7 @@ int main(int argc, char* argv[]) {
 	SDL_RendererFlip flip = SDL_FLIP_NONE;
 	SDL_Point center ; 
         for (int i = 0 ; i < n ; i++){
-		destinationRect = {p[i].x, p[i].y, newWidth,newHeight};
+		destinationRect = {(int)(p[i].x - newWidth/2), (int)(p[i].y - newHeight/2), newWidth,newHeight};
 		float angle = p[i].angle;
 
 		SDL_RenderCopyEx(renderer, texture, &Rect, &destinationRect, angle, NULL, flip);
@@ -133,7 +139,15 @@ int main(int argc, char* argv[]) {
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
 
+	// update position
+	for (int i = 0 ; i < n ; i++){
+		p[i].x += 0.001*(float)i ; 
+		p[i].y -= 0.001*(float)i ;
+	}
+
         // Wait a short time to avoid excessive CPU usage
+	//
+	//
         SDL_Delay(16);
     }
 
