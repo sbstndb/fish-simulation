@@ -30,13 +30,14 @@ int main(int argc, char* argv[]) {
     // Initialize ImGui with SDL and OpenGL2
     ImGui::CreateContext();
 
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
     io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls	
 
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer2_Init(renderer);
-	io.Fonts->AddFontDefault();
+    io.Fonts->AddFontDefault();
 
     // Main loop
     bool quit = false;
@@ -56,7 +57,7 @@ int main(int argc, char* argv[]) {
 
         // Your ImGui code here
         ImGui::Begin("Salut les ZINZINS");
-        ImGui::Text("fenetre d'un ZINZIN");
+        ImGui::Text("fenêtre d'un ZINZIN");
         ImGui::End();
 
         // Render ImGui
