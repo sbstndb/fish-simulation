@@ -3,6 +3,7 @@ project(sdl-imgui)
 
 # Recherche de la bibliothèque SDL2
 find_package(SDL2 REQUIRED)
+find_package(SDL2_IMAGE REQUIRED)
 
 # Ajout des sources de votre programme principal
 set(SOURCES
@@ -29,17 +30,27 @@ set(IMGUI_SOURCES
 # Include directories
 include_directories(
     ${SDL2_INCLUDE_DIRS}
+    ${SDL2_IMAGE_INCLUDE_DIRS}
     external/imgui
     external/imgui/backends
 )
+
+message(STATUS "SDL2_INCLUDE_DIRS: ${SDL2_INCLUDE_DIRS}")
+message(STATUS "SDL2_LIBRARIES: ${SDL2_LIBRARIES}")
+message(STATUS "SDL2_IMAGE_INCLUDE_DIRS: ${SDL2_IMAGE_INCLUDE_DIRS}")
+message(STATUS "SDL2_IMAGE_LIBRARIES: ${SDL2_IMAGE_LIBRARIES}")
+
+message(STATUS "SDL2_IMAGE_INCLUDE_DIRS: ${SDL2_IMAGE_INCLUDE_DIRS}")
+message(STATUS "SDL2_IMAGE_LIBRARIES: ${SDL2_IMAGE_LIBRARIES}")
+
 
 
 # Définition de l'exécutable
 add_executable(sdl-imgui ${SOURCES} ${IMGUI_SOURCES})
 
 # Inclusion des en-têtes
-target_include_directories(sdl-imgui PRIVATE external/imgui external/imgui/backends ${SDL2_INCLUDE_DIRS})
+target_include_directories(sdl-imgui PRIVATE external/imgui external/imgui/backends ${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS})
 
 # Liaison des bibliothèques
-target_link_libraries(sdl-imgui PRIVATE ${SDL2_LIBRARIES} GL)
+target_link_libraries(sdl-imgui PRIVATE ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} GL)
 
