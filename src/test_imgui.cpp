@@ -39,6 +39,7 @@ int main(int argc, char* argv[]) {
     ImGui_ImplSDLRenderer2_Init(renderer);
     io.Fonts->AddFontDefault();
 
+
     // Main loop
     bool quit = false;
     while (!quit) {
@@ -64,7 +65,15 @@ int main(int argc, char* argv[]) {
         ImGui::Render();
 
         // Render SDL
+	//
+	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         SDL_RenderClear(renderer);
+
+        SDL_SetRenderDrawColor(renderer, 200, 20, 20, 255);
+        SDL_SetRenderDrawColor(renderer, 50 , 50, 50, 50);
+        SDL_RenderDrawLine(renderer, 100, 100, 500, 500);
+
+
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
 
