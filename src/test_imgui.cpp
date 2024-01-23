@@ -5,7 +5,26 @@
 #include "../external/imgui/backends/imgui_impl_sdl2.h"
 #include "../external/imgui/backends/imgui_impl_sdlrenderer2.h"
 
+
+struct poisson {
+	int x ; 
+	int y ; 
+	float angle ; 
+};
+
+
+
 int main(int argc, char* argv[]) {
+
+	// initialise poisson structure 
+	int n = 100 ; 
+	poisson* p = (poisson*) malloc(sizeof(poisson) * n);
+	for (int i = 0 ; i < n ; i++){
+		p[i].x = (int) (i * 15);
+		p[i].y = (int) (i * 10)*0; 
+		p[i].angle = (float) 5.0f * i ;
+	}
+
     // Initialize SDL
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "Error initializing SDL: %s\n", SDL_GetError());
@@ -54,6 +73,8 @@ int main(int argc, char* argv[]) {
 	}
 
 
+	int count = 0 ; 
+
     // Main loop
     bool quit = false;
     while (!quit) {
@@ -88,8 +109,27 @@ int main(int argc, char* argv[]) {
         SDL_RenderDrawLine(renderer, 100, 100, 500, 500);
 	
 	// render surface
-		SDL_RenderCopy(renderer, texture, NULL, NULL);
+	//
+	//
+    // Obtenir la largeur et la hauteur originales de l'image
+    int originalWidth, originalHeight;
+    SDL_QueryTexture(texture, NULL, NULL, &originalWidth, &originalHeight);
 
+    // Redimensionner l'image à la moitié de sa taille d'origine (par exemple)
+    int newWidth = (int)(originalWidth / 50);
+    int newHeight = (int)(originalHeight / 50);
+
+    // Définir la destination pour le redimensionnement
+    SDL_Rect Rect = {0,0, originalWidth, originalHeight};
+    SDL_Rect destinationRect;
+	SDL_RendererFlip flip = SDL_FLIP_NONE;
+	SDL_Point center ; 
+        for (int i = 0 ; i < n ; i++){
+		destinationRect = {p[i].x, p[i].y, newWidth,newHeight};
+		float angle = p[i].angle;
+
+		SDL_RenderCopyEx(renderer, texture, &Rect, &destinationRect, angle, NULL, flip);
+	}
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
 
