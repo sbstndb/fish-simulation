@@ -5,6 +5,11 @@ project(sdl-imgui)
 find_package(SDL2 REQUIRED)
 find_package(SDL2_IMAGE REQUIRED)
 
+
+set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+
 # Ajout des sources de votre programme principal
 set(SOURCES
 	src/test_imgui.cpp

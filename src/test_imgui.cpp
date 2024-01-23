@@ -1,6 +1,11 @@
+
+
 #include <SDL.h>
 #include <SDL_image.h>
+
 #include <stdio.h>
+#include <math.h>
+
 #include "../external/imgui/imgui.h"
 #include "../external/imgui/backends/imgui_impl_sdl2.h"
 #include "../external/imgui/backends/imgui_impl_sdlrenderer2.h"
@@ -8,25 +13,135 @@
 
 struct poisson {
 	float x ; 
-	float y ; 
+	float y ;
+        float vx ; 
+	float vy ;
 	float angle ; 
 };
+
+
+float speed(struct poisson fish){
+	float s = sqrt(fish.vx*fish.vx + fish.vy*fish.vy);
+	return s;
+}
+
+float distance(struct poisson fish1, struct poisson fish2){
+        float d = sqrt((fish1.x - fish2.x)*(fish1.x - fish2.x) + (fish1.y - fish2.y)*(fish1.y - fish2.y));
+        return d;
+}
+
+
+void fish_evolution(struct  poisson *fish, int size, float dt){
+	struct poisson *fish1 ;
+	struct poisson *fish2 ;	
+
+	for (int i = 0 ; i < size ; i++){
+		float moveX = 0.0f;
+		float moveY = 0.0f;
+		float avgDX = 0.0f; 
+		float avgDY = 0.0f; 
+		int voisin = 0 ; 
+		float d ; 
+		for (int j = 0 ; j < size; j++){
+			if (i != j){
+				fish1 = &fish[i];
+				fish2 = &fish[j];
+				d = distance(*fish1, *fish2);
+				//printf("distance : %f\n", d);
+				//avoid
+				if (d < 20.0){
+				//	printf("avoid between %d and %d\n", i, j);
+					moveX += fish1->x - fish2->x ; 
+					moveY += fish1->y - fish2->y ;
+				}
+				// match velocity
+				if (d < 80.0 && d >= 20.0){
+                                  //     printf("match between %d and %d\n", i, j);
+
+					avgDX += fish2->vx;
+					avgDY += fish2->vy;
+					voisin +=1;
+				}
+			}
+		}
+		//avoid
+		fish1->vx += moveX*0.009;
+		fish1->vy += moveY*0.009;
+	
+		// match velocity 
+		if (voisin){
+			fish1->vx += ((avgDX/voisin) - fish1->vx)*0.03;
+	                fish1->vy += ((avgDY/voisin) - fish1->vy)*0.03;
+		}
+	}
+
+	// limit speed
+	float speed_limit = 30.0 ; 
+	for (int i = 0 ; i < size ; i++){
+		float s = speed(fish[i]);
+		if (s > speed_limit){
+			fish[i].vx = fish[i].vx * speed_limit / s ; 
+                      fish[i].vy = fish[i].vy * speed_limit / s ;
+
+		}
+	}
+	float speed_under_limit = 1.0 ;
+        for (int i = 0 ; i < size ; i++){
+                float s = speed(fish[i]);
+                if (s < speed_under_limit){
+                        fish[i].vx = fish[i].vx * speed_under_limit / s ;
+                      fish[i].vy = fish[i].vy * speed_under_limit / s ;
+
+                }
+        }
+
+
+
+	// bounds 
+	//
+	for (int i = 0 ; i < size ; i++){
+		if (fish[i].x < 0.0 || fish[i].x > 1200.0){
+			fish[i].vx = - fish[i].vx ; 
+		}
+	        if (fish[i].y < 0.0 || fish[i].y > 800.0){
+	                fish[i].vy = - fish[i].vy ;
+	        }
+	}
+
+	// center
+	
+
+
+        for (int i = 0 ; i < size ; i++){
+                fish[i].x += fish[i].vx*dt ;
+                fish[i].y += fish[i].vy*dt ;	
+		fish[i].angle = atan2(fish[i].vy, fish[i].vx)*(180.0/M_PI);
+        }
+
+}
+
+
 
 
 
 int main(int argc, char* argv[]) {
 
 	// initialise poisson structure 
-	int n = 100 ; 
-	int px = 600 ;
-	int py = 400 ;
+	int n = 500 ; 
+	int px = 1200 ;
+	int py = 800 ;
+	int vxmax = 10.0; 
+	int vymax = 10.0;
 	poisson* p = (poisson*) malloc(sizeof(poisson) * n);
 	for (int i = 0 ; i < n ; i++){
 		// create random numbers 
 		//
 		p[i].x = (float)rand()/(float)(RAND_MAX/px)  ;
 		p[i].y = (float)rand()/(float)(RAND_MAX/py); 
-		p[i].angle = (float) 5.0f * i ;
+                p[i].vx = (float)(rand()/(float)(RAND_MAX/(float)vxmax)) - vxmax/2.0;
+                p[i].vy = (float)(rand()/(float)(RAND_MAX/(float)vymax)) - vymax/2.0;
+		
+		p[i].angle = (float)(0.5*i);
 	}
 
     // Initialize SDL
@@ -61,10 +176,14 @@ int main(int argc, char* argv[]) {
 
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer2_Init(renderer);
+
+       static  float color[4] = {1.0f, 1.0f, 1.0f, 1.0f};
+
+
     io.Fonts->AddFontDefault();
 
 	// load textures for testing purpose
-	SDL_Surface* surface = IMG_Load("/home/sbstndbs/sdl-imgui/img/fish.png");
+	SDL_Surface* surface = IMG_Load("/home/sbstndbs/sdl-imgui/img/fleche.png");
 	if(!surface){
 		fprintf(stderr, "Error loading image FISH\n");
 		return -1;
@@ -78,7 +197,12 @@ int main(int argc, char* argv[]) {
 
 
 
-	int size_fish = 1.0 ; 
+	int size_fish = 10.0 ; 
+	float dt = 0.01 ;
+
+	float dist_repulsion = 2 ; 
+	float dist_alignement = 10 ; 
+	float dist_attraction = 30 ; 
 
     // Main loop
     bool quit = false;
@@ -100,6 +224,11 @@ int main(int argc, char* argv[]) {
         ImGui::Begin("Salut les ZINZINS");
         ImGui::Text("fenêtre d'un ZINZIN");
 	ImGui::SliderInt("Size", &size_fish, 1, 100);
+	ImGui::SliderFloat("dt", &dt, 0.01, 2.0);
+        ImGui::SliderFloat("distance répulsion", &dist_repulsion, 1, 10);
+        ImGui::SliderFloat("distance alignement", &dist_alignement, 10, 15);
+        ImGui::SliderFloat("distance attraction", &dist_attraction, 15, 50);
+	ImGui::ColorEdit3("Background Color", color);
         ImGui::End();
 
         // Render ImGui
@@ -107,12 +236,10 @@ int main(int argc, char* argv[]) {
 
         // Render SDL
 	//
-	SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+	SDL_SetRenderDrawColor(renderer, (int)(color[0]*255), (int)(color[1]*255), (int)(color[2]*255), (int)(color[3]*255));
         SDL_RenderClear(renderer);
-
-        SDL_SetRenderDrawColor(renderer, 200, 20, 20, 255);
         SDL_SetRenderDrawColor(renderer, 50 , 50, 50, 50);
-        SDL_RenderDrawLine(renderer, 100, 100, 500, 500);
+//        SDL_RenderDrawLine(renderer, 100, 100, 500, 500);
 	
 	// render surface
 	//
@@ -140,15 +267,11 @@ int main(int argc, char* argv[]) {
         SDL_RenderPresent(renderer);
 
 	// update position
-	for (int i = 0 ; i < n ; i++){
-		p[i].x += 0.001*(float)i ; 
-		p[i].y -= 0.001*(float)i ;
-	}
-
+	fish_evolution(p, n, dt);
         // Wait a short time to avoid excessive CPU usage
 	//
 	//
-        SDL_Delay(16);
+        SDL_Delay(1);
     }
 
     // Cleanup
