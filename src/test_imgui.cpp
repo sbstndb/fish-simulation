@@ -1,4 +1,5 @@
 #include <SDL.h>
+#include <SDL_image.h>
 #include <stdio.h>
 #include "../external/imgui/imgui.h"
 #include "../external/imgui/backends/imgui_impl_sdl2.h"
@@ -12,7 +13,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Create SDL window and renderer
-    SDL_Window* window = SDL_CreateWindow("SDL2 + ImGui", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 800, 600, SDL_WINDOW_SHOWN);
+    SDL_Window* window = SDL_CreateWindow("SDL2 + ImGui", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1600, 1000, SDL_WINDOW_SHOWN);
     if (!window) {
         fprintf(stderr, "Error creating SDL window: %s\n", SDL_GetError());
         SDL_Quit();
@@ -38,6 +39,19 @@ int main(int argc, char* argv[]) {
     ImGui_ImplSDL2_InitForSDLRenderer(window, renderer);
     ImGui_ImplSDLRenderer2_Init(renderer);
     io.Fonts->AddFontDefault();
+
+	// load textures for testing purpose
+	SDL_Surface* surface = IMG_Load("/home/sbstndbs/sdl-imgui/img/fish.png");
+	if(!surface){
+		fprintf(stderr, "Error loading image FISH\n");
+		return -1;
+	}	
+	//crreate texture 
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+	SDL_FreeSurface(surface);
+	if (!texture){
+		fprintf(stderr, "Error from surface\n");
+	}
 
 
     // Main loop
@@ -72,7 +86,9 @@ int main(int argc, char* argv[]) {
         SDL_SetRenderDrawColor(renderer, 200, 20, 20, 255);
         SDL_SetRenderDrawColor(renderer, 50 , 50, 50, 50);
         SDL_RenderDrawLine(renderer, 100, 100, 500, 500);
-
+	
+	// render surface
+		SDL_RenderCopy(renderer, texture, NULL, NULL);
 
         ImGui_ImplSDLRenderer2_RenderDrawData(ImGui::GetDrawData());
         SDL_RenderPresent(renderer);
