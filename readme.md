@@ -35,21 +35,27 @@ sudo apt-get install build-essential cmake libsdl2-dev libsdl2-image-dev
     cd fish-simulation
     ```
 
-2.  **Create a build directory:**
+2.  **Initialize submodules:**
+
+    ```bash
+    git submodule update --init --recursive
+    ```
+
+3.  **Create a build directory:**
 
     ```bash
     mkdir build
     cd build
     ```
 
-3.  **Run CMake and build the project:**
+4.  **Run CMake and build the project:**
 
     ```bash
     cmake ..
     make
     ```
 
-4.  **Run the simulation:**
+5.  **Run the simulation:**
 
     ```bash
     ./sdl-imgui
@@ -65,6 +71,6 @@ sudo apt-get install build-essential cmake libsdl2-dev libsdl2-image-dev
 
 ## Important Note
 
-The path to the fish texture is currently hardcoded in `src/test_imgui.cpp`. You may need to change the path in the `IMG_Load` function call if you move the `img` directory or run the executable from a different location.
+The fish texture path is set to `../img/fleche.png` in `src/test_imgui.cpp`. Make sure to run the executable from the `build` directory so it can find the image files correctly.
 
 

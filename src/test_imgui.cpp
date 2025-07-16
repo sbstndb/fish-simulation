@@ -183,7 +183,7 @@ int main(int argc, char* argv[]) {
     io.Fonts->AddFontDefault();
 
 	// load textures for testing purpose
-	SDL_Surface* surface = IMG_Load("/home/sbstndbs/sdl-imgui/img/fleche.png");
+	SDL_Surface* surface = IMG_Load("../img/fleche.png");
 	if(!surface){
 		fprintf(stderr, "Error loading image FISH\n");
 		return -1;

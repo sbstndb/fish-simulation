@@ -3,7 +3,8 @@ project(sdl-imgui)
 
 # Recherche de la bibliothèque SDL2
 find_package(SDL2 REQUIRED)
-find_package(SDL2_IMAGE REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL2_IMAGE REQUIRED SDL2_image)
 
 
 set(CMAKE_CXX_FLAGS "-Wall -Wextra")
